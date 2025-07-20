@@ -1,0 +1,105 @@
+{
+  "name": "@oxog/string",
+  "version": "1.0.0",
+  "description": "Comprehensive string manipulation utilities with zero dependencies",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js",
+      "types": "./dist/types/index.d.ts"
+    }
+  },
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "npm run clean && npm run build:types && npm run build:cjs && npm run build:esm",
+    "build:types": "tsc --emitDeclarationOnly --outDir dist/types",
+    "build:cjs": "tsc --module commonjs --outDir dist/cjs",
+    "build:esm": "tsc --module es2015 --outDir dist/esm",
+    "clean": "rimraf dist",
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "test:watch": "jest --watch",
+    "test:ci": "jest --ci --coverage --watchAll=false",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "typecheck": "tsc --noEmit",
+    "benchmark": "node benchmarks/index.js",
+    "examples": "node examples/comprehensive.js",
+    "examples:basic": "node examples/basic-usage.js",
+    "examples:performance": "node examples/performance.js",
+    "examples:real-world": "node examples/real-world-usage.js",
+    "examples:plugins": "node examples/plugin-development.js",
+    "validate": "npm run typecheck && npm run lint && npm run test:ci",
+    "pre-release": "npm run validate && npm run build",
+    "release:patch": "npm run pre-release && npm version patch && npm publish",
+    "release:minor": "npm run pre-release && npm version minor && npm publish",
+    "release:major": "npm run pre-release && npm version major && npm publish",
+    "publish:interactive": "node scripts/publish.js",
+    "prepublishOnly": "npm run pre-release"
+  },
+  "keywords": [
+    "string",
+    "manipulation",
+    "utility",
+    "case-conversion",
+    "validation",
+    "encoding",
+    "unicode",
+    "typescript",
+    "zero-dependencies",
+    "tree-shakeable",
+    "performance",
+    "algorithms",
+    "text-processing",
+    "slugify",
+    "camelCase",
+    "snakeCase",
+    "kebabCase",
+    "similarity",
+    "fuzzy-match",
+    "masking",
+    "sanitization",
+    "internationalization",
+    "plugin-system",
+    "chainable",
+    "functional",
+    "base64",
+    "hex",
+    "html-encoding",
+    "boyer-moore",
+    "levenshtein",
+    "jaro",
+    "soundex",
+    "metaphone"
+  ],
+  "author": "Ersin KOÇ",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ersinkoc/string.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ersinkoc/string/issues"
+  },
+  "homepage": "https://github.com/ersinkoc/string#readme",
+  "devDependencies": {
+    "@types/jest": "^29.5.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "jest": "^29.5.0",
+    "rimraf": "^5.0.0",
+    "ts-jest": "^29.1.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
