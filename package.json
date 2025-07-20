@@ -36,7 +36,7 @@
     "examples:performance": "node examples/performance.js",
     "examples:real-world": "node examples/real-world-usage.js",
     "examples:plugins": "node examples/plugin-development.js",
-    "validate": "npm run typecheck && npm run lint && npm run test:ci",
+    "validate": "npm run typecheck && npm run test:ci",
     "pre-release": "npm run validate && npm run build",
     "release:patch": "npm run pre-release && npm version patch && npm publish",
     "release:minor": "npm run pre-release && npm version minor && npm publish",

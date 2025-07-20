@@ -107,11 +107,11 @@ function validateEnvironment() {
   
   // Check if package name is available (for first publish)
   try {
-    const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-    execSync(`npm view ${packageJson.name}`, { stdio: 'pipe' });
-    log(`ℹ️  Package ${packageJson.name} already exists on NPM`, 'blue');
+    const packageJsonData = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+    execSync(`npm view ${packageJsonData.name}`, { stdio: 'pipe' });
+    log(`ℹ️  Package ${packageJsonData.name} already exists on NPM`, 'blue');
   } catch (error) {
-    log(`✅ Package name ${packageJson.name} is available`, 'green');
+    log(`✅ Package name ${packageJsonData.name} is available`, 'green');
   }
 }
 
