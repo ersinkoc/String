@@ -141,6 +141,22 @@ wrap('hello world test', 10);          // 'hello\nworld test'
 slugify('Hello World!');               // 'hello-world'
 ```
 
+### Cleaning
+
+```typescript
+import { trim, trimStart, trimEnd, removeExtraSpaces, normalizeWhitespace, removeNonPrintable, stripHtml, stripAnsi, removeAccents } from '@oxog/string';
+
+trim('  hello  ');                  // 'hello'
+trimStart('__hello__', '_');        // 'hello__'
+trimEnd('__hello__', '_');          // '__hello'
+removeExtraSpaces('hello   world'); // 'hello world'
+normalizeWhitespace('hello\tworld');  // 'hello world'
+removeNonPrintable('hello\x00world'); // 'helloworld'
+stripHtml('<p>hello</p>');          // 'hello'
+stripAnsi('\x1b[31mhello\x1b[0m');    // 'hello'
+removeAccents('crème brûlée');      // 'creme brulee'
+```
+
 ### Encoding/Decoding
 
 ```typescript
@@ -154,20 +170,32 @@ encodeHtml('<div>Hello</div>');        // '&lt;div&gt;Hello&lt;/div&gt;'
 decodeHtml('&lt;div&gt;Hello&lt;/div&gt;'); // '<div>Hello</div>'
 ```
 
-### Advanced Features
+### Analysis
 
 ```typescript
-import { similarity, fuzzyMatch, soundsLike, findPatterns, extractEmails, random, mask, toTable, boxify, progressBar } from '@oxog/string';
+import { similarity, fuzzyMatch, soundsLike, findPatterns, extractEmails } from '@oxog/string';
 
 similarity('hello', 'helo');           // 0.8 (similarity score)
 fuzzyMatch('hello', 'helo', 0.7);      // true
 soundsLike('hello', 'helo');           // true (using soundex)
 findPatterns('abcabcabc');             // [{ pattern: 'abc', frequency: 3, ... }]
 extractEmails('Contact test@example.com'); // ['test@example.com']
+```
+
+### Utilities
+
+```typescript
+import { random, mask } from '@oxog/string';
+
 random(10);                            // 'aB3xY9mN2p' (random)
 mask('secret', { unmaskedEnd: 2 });    // '****et'
+```
 
-// Visual formatting
+### Visual Formatting
+
+```typescript
+import { toTable, boxify, progressBar } from '@oxog/string';
+
 toTable([['Name', 'Age'], ['John', '30']]); // ASCII table
 boxify('Hello World');                 // Boxed text
 progressBar(75);                       // '███████████░░░░░ 75.0%'
