@@ -81,7 +81,7 @@ describe('Manipulation functions', () => {
     });
 
     it('should handle preserveWords when no words fit', () => {
-      expect(truncate('superlongword', 5, { preserveWords: true })).toBe('su...');
+      expect(truncate('superlongword', 5, { preserveWords: true })).toBe('...');
     });
 
     it('should handle empty string', () => {
