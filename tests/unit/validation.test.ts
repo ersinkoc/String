@@ -14,6 +14,7 @@ describe('Validation functions', () => {
       expect(isEmail('@example.com')).toBe(false);
       expect(isEmail('user@')).toBe(false);
       expect(isEmail('user@@example.com')).toBe(false);
+      expect(isEmail('test@example')).toBe(false);
       expect(isEmail('')).toBe(false);
     });
   });
@@ -116,6 +117,7 @@ describe('Validation functions', () => {
     it('should reject invalid base64', () => {
       expect(isBase64('Hello World')).toBe(false);
       expect(isBase64('SGVsbG8gV29ybGQ')).toBe(false); // Wrong length
+      expect(isBase64('invalid-base64')).toBe(false);
       expect(isBase64('')).toBe(false);
     });
   });

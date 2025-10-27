@@ -50,7 +50,7 @@ export function truncate(str: string, length: number, options: TruncateOptions =
       result = potential;
     }
     
-    return result ? result + suffix : str.slice(0, Math.max(0, length - suffix.length)) + suffix;
+    return result ? result + suffix : suffix.slice(0, length);
   }
   
   return str.slice(0, Math.max(0, length - suffix.length)) + suffix;
