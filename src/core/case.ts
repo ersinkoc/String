@@ -7,12 +7,16 @@ export function toCamelCase(str: string): string {
 }
 
 export function toPascalCase(str: string): string {
+  if (!str || typeof str !== 'string') return '';
+
   return str
     .replace(/[^a-zA-Z0-9]+(.)/g, (_, char) => char.toUpperCase())
     .replace(/^[a-z]/, char => char.toUpperCase());
 }
 
 export function toSnakeCase(str: string): string {
+  if (!str || typeof str !== 'string') return '';
+
   return str
     .replace(/([a-z])([A-Z])/g, '$1_$2')
     .replace(/[^a-zA-Z0-9]/g, '_')
@@ -22,6 +26,8 @@ export function toSnakeCase(str: string): string {
 }
 
 export function toKebabCase(str: string): string {
+  if (!str || typeof str !== 'string') return '';
+
   return str
     .replace(/([a-z])([A-Z])/g, '$1-$2')
     .replace(/[^a-zA-Z0-9]/g, '-')

@@ -129,9 +129,9 @@ describe('Manipulation functions', () => {
       expect(wrap('', 10)).toBe('');
     });
 
-    it('should handle zero or negative width', () => {
-      expect(wrap('hello world', 0)).toBe('hello world');
-      expect(wrap('hello world', -5)).toBe('hello world');
+    it('should throw error on zero or negative width', () => {
+      expect(() => wrap('hello world', 0)).toThrow('Width must be a positive number');
+      expect(() => wrap('hello world', -5)).toThrow('Width must be a positive number');
     });
 
     it('should handle single word longer than width', () => {
