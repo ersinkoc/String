@@ -35,13 +35,18 @@ export function repeat(str: string, count: number, separator: string = ''): stri
 
 export function truncate(str: string, length: number, options: TruncateOptions = {}): string {
   const { suffix = '...', preserveWords = false } = options;
-  
+
   if (str.length <= length) return str;
-  
+
+  // If suffix is longer than the allowed length, truncate the suffix too
+  if (suffix.length >= length) {
+    return str.slice(0, length);
+  }
+
   if (preserveWords) {
     const words = str.split(/\s+/);
     let result = '';
-    
+
     for (const word of words) {
       const potential = result ? `${result} ${word}` : word;
       if (potential.length + suffix.length > length) {
@@ -49,10 +54,10 @@ export function truncate(str: string, length: number, options: TruncateOptions =
       }
       result = potential;
     }
-    
+
     return result ? result + suffix : suffix.slice(0, length);
   }
-  
+
   return str.slice(0, Math.max(0, length - suffix.length)) + suffix;
 }
 
@@ -80,8 +85,11 @@ export function pad(str: string, length: number, fillString: string = ' ', type:
 
 export function wrap(str: string, width: number, options: WrapOptions = {}): string {
   const { indent = '', cut = false } = options;
-  
-  if (width <= 0) return str;
+
+  // Validate width parameter
+  if (width <= 0) {
+    throw new Error('Width must be a positive number');
+  }
   
   const words = str.split(/\s+/);
   const lines: string[] = [];
@@ -137,20 +145,25 @@ export function slugify(str: string, options: SlugifyOptions = {}): string {
     strict = false,
     locale
   } = options;
-  
+
   let result = removeAccents(str);
-  
+
   if (lowercase) {
     result = locale ? result.toLocaleLowerCase(locale) : result.toLowerCase();
   }
-  
+
   if (strict) {
     result = result.replace(/[^a-zA-Z0-9]+/g, separator);
   } else {
     result = result.replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, separator);
   }
-  
+
+  // Remove leading and trailing separators
   result = result.replace(new RegExp(`^\\${separator}+|\\${separator}+$`, 'g'), '');
-  
+
+  // Clean up any consecutive separators that might have been created
+  const escapedSep = separator.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  result = result.replace(new RegExp(`${escapedSep}{2,}`, 'g'), separator);
+
   return result;
 }

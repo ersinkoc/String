@@ -2,11 +2,21 @@ export function encodeBase64(str: string): string {
   if (typeof Buffer !== 'undefined') {
     return Buffer.from(str, 'utf8').toString('base64');
   }
-  
+
   if (typeof btoa !== 'undefined') {
-    return btoa(unescape(encodeURIComponent(str)));
+    // Convert string to UTF-8 bytes without using deprecated escape/unescape
+    try {
+      // Modern approach using TextEncoder-like conversion
+      const utf8Bytes = encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (_, hex) => {
+        return String.fromCharCode(parseInt(hex, 16));
+      });
+      return btoa(utf8Bytes);
+    } catch {
+      // Fallback to pure implementation
+      return base64Encode(str);
+    }
   }
-  
+
   return base64Encode(str);
 }
 
@@ -14,11 +24,22 @@ export function decodeBase64(str: string): string {
   if (typeof Buffer !== 'undefined') {
     return Buffer.from(str, 'base64').toString('utf8');
   }
-  
+
   if (typeof atob !== 'undefined') {
-    return decodeURIComponent(escape(atob(str)));
+    try {
+      const decoded = atob(str);
+      // Convert from UTF-8 bytes without using deprecated escape/unescape
+      const percentEncoded = Array.from(decoded, c => {
+        const code = c.charCodeAt(0);
+        return code > 127 ? '%' + code.toString(16).toUpperCase().padStart(2, '0') : c;
+      }).join('');
+      return decodeURIComponent(percentEncoded);
+    } catch {
+      // Fallback to pure implementation
+      return base64Decode(str);
+    }
   }
-  
+
   return base64Decode(str);
 }
 
@@ -30,9 +51,14 @@ export function encodeHex(str: string): string {
 
 export function decodeHex(str: string): string {
   if (str.length % 2 !== 0) {
-    throw new Error('Invalid hex string');
+    throw new Error('Invalid hex string: length must be even');
   }
-  
+
+  // Validate that all characters are valid hex digits
+  if (!/^[0-9a-fA-F]*$/.test(str)) {
+    throw new Error('Invalid hex string: contains non-hexadecimal characters');
+  }
+
   const bytes = new Uint8Array(str.length / 2);
   for (let i = 0; i < str.length; i += 2) {
     bytes[i / 2] = parseInt(str.slice(i, i + 2), 16);
@@ -78,10 +104,34 @@ export function decodeHtml(str: string): string {
     '&nbsp;': ' ',
     '&copy;': '©',
     '&reg;': '®',
-    '&trade;': '™'
+    '&trade;': '™',
+    '&mdash;': '\u2014',
+    '&ndash;': '\u2013',
+    '&ldquo;': '\u201C',
+    '&rdquo;': '\u201D',
+    '&lsquo;': '\u2018',
+    '&rsquo;': '\u2019',
+    '&hellip;': '\u2026',
+    '&bull;': '\u2022'
   };
-  
-  return str.replace(/&[#\w]+;/g, entity => htmlEntities[entity] || entity);
+
+  return str.replace(/&(?:#(\d+)|#x([0-9a-fA-F]+)|([a-zA-Z]+));/g, (match, dec, hex, named) => {
+    // Handle decimal numeric entity (&#65;)
+    if (dec) {
+      const code = parseInt(dec, 10);
+      return code >= 0 && code <= 0x10FFFF ? String.fromCodePoint(code) : match;
+    }
+    // Handle hexadecimal numeric entity (&#x41;)
+    if (hex) {
+      const code = parseInt(hex, 16);
+      return code >= 0 && code <= 0x10FFFF ? String.fromCodePoint(code) : match;
+    }
+    // Handle named entity (&amp;)
+    if (named) {
+      return htmlEntities[`&${named};`] || match;
+    }
+    return match;
+  });
 }
 
 export function encodeUri(str: string): string {

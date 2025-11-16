@@ -37,6 +37,13 @@ export interface RandomOptions {
   symbols?: boolean;
   excludeSimilar?: boolean;
   customCharset?: string;
+  /**
+   * Use cryptographically secure random number generation.
+   * When true, uses crypto.getRandomValues() if available.
+   * Use this option for security-sensitive strings like passwords and tokens.
+   * @default false
+   */
+  secure?: boolean;
 }
 
 export interface TableOptions {

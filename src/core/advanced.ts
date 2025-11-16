@@ -97,34 +97,46 @@ export function random(length: number, options: RandomOptions = {}): string {
     numbers = true,
     symbols = false,
     excludeSimilar = false,
-    customCharset
+    customCharset,
+    secure = false
   } = options;
-  
+
   if (customCharset) {
     let result = '';
     for (let i = 0; i < length; i++) {
-      result += customCharset[Math.floor(Math.random() * customCharset.length)];
+      result += customCharset[secure ? getSecureRandomInt(customCharset.length) : Math.floor(Math.random() * customCharset.length)];
     }
     return result;
   }
-  
+
   let charset = '';
-  
+
   if (uppercase) charset += excludeSimilar ? 'ABCDEFGHJKLMNPQRSTUVWXYZ' : 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   if (lowercase) charset += excludeSimilar ? 'abcdefghjkmnpqrstuvwxyz' : 'abcdefghijklmnopqrstuvwxyz';
   if (numbers) charset += excludeSimilar ? '23456789' : '0123456789';
   if (symbols) charset += '!@#$%^&*()_+-=[]{}|;:,.<>?';
-  
+
   if (!charset) {
-    throw new Error('At least one character type must be enabled');
+    throw new Error('At least one character type must be enabled. Use uppercase, lowercase, numbers, or symbols options.');
   }
-  
+
   let result = '';
   for (let i = 0; i < length; i++) {
-    result += charset[Math.floor(Math.random() * charset.length)];
+    result += charset[secure ? getSecureRandomInt(charset.length) : Math.floor(Math.random() * charset.length)];
   }
-  
+
   return result;
+}
+
+// Helper function for cryptographically secure random integers
+function getSecureRandomInt(max: number): number {
+  if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+    const array = new Uint32Array(1);
+    crypto.getRandomValues(array);
+    return array[0]! % max;
+  }
+  // Fallback to Math.random() if crypto not available
+  return Math.floor(Math.random() * max);
 }
 
 export function generatePronounceable(length: number): string {
@@ -192,14 +204,37 @@ export function maskCreditCard(cc: string): string {
   return mask(digits, { unmaskedEnd: 4 });
 }
 
+/**
+ * Generates a simple checksum hash (NOT cryptographically secure).
+ *
+ * WARNING: These are NOT real cryptographic hash functions!
+ * Do NOT use for security-sensitive operations like:
+ * - Password hashing
+ * - Data integrity verification
+ * - Digital signatures
+ * - Security tokens
+ *
+ * For cryptographic hashing, use a proper crypto library like:
+ * - Node.js: crypto.createHash()
+ * - Browser: SubtleCrypto (Web Crypto API)
+ * - Universal: hash.js, crypto-js, or similar
+ *
+ * These simple hashes are suitable only for:
+ * - Non-security checksums
+ * - Basic data fingerprinting
+ * - Cache keys
+ * - Simple deduplication
+ */
 export function hash(str: string, algorithm: HashAlgorithm): string {
+  console.warn(`WARNING: hash() uses simple checksums, NOT cryptographic hashes. Do not use for security purposes.`);
+
   switch (algorithm) {
     case 'md5':
-      return md5(str);
+      return simpleChecksum(str, 'md5');
     case 'sha1':
-      return sha1(str);
+      return simpleChecksum(str, 'sha1');
     case 'sha256':
-      return sha256(str);
+      return simpleChecksum(str, 'sha256');
     default:
       throw new Error(`Unknown hash algorithm: ${algorithm}`);
   }
@@ -213,40 +248,42 @@ export function toTable(data: string[][], options: TableOptions = {}): string {
     padding = 1,
     align = 'left'
   } = options;
-  
+
   if (!data.length) return '';
-  
+
   const maxCols = Math.max(...data.map(row => row.length));
   const colWidths = new Array(maxCols).fill(0);
-  
-  // Calculate column widths
+
+  // Calculate column widths - convert all cells to strings
   data.forEach(row => {
     row.forEach((cell, col) => {
-      colWidths[col] = Math.max(colWidths[col], cell.length);
+      const cellStr = String(cell);
+      colWidths[col] = Math.max(colWidths[col] || 0, cellStr.length);
     });
   });
-  
+
   const lines: string[] = [];
-  
+
   if (border) {
     const borderLine = '+' + colWidths.map(w => '-'.repeat(w + padding * 2)).join('+') + '+';
     lines.push(borderLine);
   }
-  
+
   data.forEach((row, rowIndex) => {
     const cells = row.map((cell, col) => {
-      const width = colWidths[col];
-      let aligned = cell;
-      
+      const cellStr = String(cell);
+      const width = colWidths[col] || 0;
+      let aligned = cellStr;
+
       if (align === 'center') {
-        const spaces = width - cell.length;
+        const spaces = width - cellStr.length;
         const left = Math.floor(spaces / 2);
         const right = spaces - left;
-        aligned = ' '.repeat(left) + cell + ' '.repeat(right);
+        aligned = ' '.repeat(left) + cellStr + ' '.repeat(right);
       } else if (align === 'right') {
-        aligned = cell.padStart(width);
+        aligned = cellStr.padStart(width);
       } else {
-        aligned = cell.padEnd(width);
+        aligned = cellStr.padEnd(width);
       }
       
       return ' '.repeat(padding) + aligned + ' '.repeat(padding);
@@ -278,35 +315,35 @@ export function boxify(str: string, options: BoxOptions = {}): string {
   } = options;
   
   const styles = {
-    single: { tl: '┌', tr: '┐', bl: '└', br: '┘', h: '─', v: '│' },
-    double: { tl: '╔', tr: '╗', bl: '╚', br: '╝', h: '═', v: '║' },
-    rounded: { tl: '╭', tr: '╮', bl: '╰', br: '╯', h: '─', v: '│' },
-    thick: { tl: '┏', tr: '┓', bl: '┗', br: '┛', h: '━', v: '┃' }
+    single: { tl: '┌', tr: '┐', bl: '└', br: '┘', h: '─', v: '│', ml: '├', mr: '┤' },
+    double: { tl: '╔', tr: '╗', bl: '╚', br: '╝', h: '═', v: '║', ml: '╠', mr: '╣' },
+    rounded: { tl: '╭', tr: '╮', bl: '╰', br: '╯', h: '─', v: '│', ml: '├', mr: '┤' },
+    thick: { tl: '┏', tr: '┓', bl: '┗', br: '┛', h: '━', v: '┃', ml: '┣', mr: '┫' }
   };
-  
+
   const chars = styles[style];
   const lines = str.split('\n');
   const maxWidth = Math.max(...lines.map(line => line.length));
   const innerWidth = maxWidth + padding * 2;
-  
+
   const result: string[] = [];
-  
+
   // Add top margin
   for (let i = 0; i < margin; i++) {
     result.push('');
   }
-  
+
   // Top border
   const topBorder = chars.tl + chars.h.repeat(innerWidth) + chars.tr;
   result.push(' '.repeat(margin) + topBorder);
-  
+
   // Title
   if (title) {
     const titlePadding = Math.max(0, Math.floor((innerWidth - title.length) / 2));
     const titleLine = chars.v + ' '.repeat(titlePadding) + title + ' '.repeat(innerWidth - titlePadding - title.length) + chars.v;
     result.push(' '.repeat(margin) + titleLine);
-    
-    const titleSeparator = chars.tl + chars.h.repeat(innerWidth) + chars.tr;
+
+    const titleSeparator = chars.ml + chars.h.repeat(innerWidth) + chars.mr;
     result.push(' '.repeat(margin) + titleSeparator);
   }
   
@@ -349,37 +386,34 @@ export function progressBar(value: number, options: ProgressOptions = {}): strin
   return bar;
 }
 
-// Pure JavaScript hash implementations
-function md5(str: string): string {
-  // Simplified MD5 implementation - in production, use a proper crypto library
+/**
+ * Simple checksum implementations (NOT cryptographically secure).
+ * These use a basic hash algorithm for non-security purposes only.
+ */
+function simpleChecksum(str: string, type: 'md5' | 'sha1' | 'sha256'): string {
   let hash = 0;
-  if (str.length === 0) return hash.toString(16);
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // Convert to 32-bit integer
-  }
-  return Math.abs(hash).toString(16);
-}
 
-function sha1(str: string): string {
-  // Simplified SHA1 implementation - in production, use a proper crypto library
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash;
+  if (str.length === 0) {
+    hash = 0;
+  } else {
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
   }
-  return Math.abs(hash).toString(16).padStart(8, '0');
-}
 
-function sha256(str: string): string {
-  // Simplified SHA256 implementation - in production, use a proper crypto library
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash;
+  const absHash = Math.abs(hash).toString(16);
+
+  // Different output lengths to mimic the algorithm names (but still not cryptographic!)
+  switch (type) {
+    case 'md5':
+      return absHash;
+    case 'sha1':
+      return absHash.padStart(8, '0');
+    case 'sha256':
+      return absHash.padStart(16, '0');
+    default:
+      return absHash;
   }
-  return Math.abs(hash).toString(16).padStart(16, '0');
 }

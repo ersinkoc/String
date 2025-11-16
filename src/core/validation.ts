@@ -1,7 +1,11 @@
 import type { UrlOptions } from '../types';
 
 export function isEmail(str: string): boolean {
-  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@([a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
+  // Improved email regex that disallows:
+  // - Consecutive dots (..)
+  // - Leading/trailing dots in local part
+  // - Invalid characters
+  const emailRegex = /^[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*@([a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
   return emailRegex.test(str);
 }
 
@@ -19,26 +23,55 @@ export function isUrl(str: string, options: UrlOptions = {}): boolean {
 
   try {
     const url = new URL(str);
-    
+
     if (!allowProtocols.includes(url.protocol.slice(0, -1))) {
       return false;
     }
-    
+
     if (!allowUnderscore && url.hostname.includes('_')) {
       return false;
     }
-    
+
     if (!allowTrailingDot && url.hostname.endsWith('.')) {
       return false;
     }
-    
+
+    // Additional hostname validation for edge cases
+    const hostname = url.hostname;
+    if (
+      hostname.includes('..') ||
+      hostname.startsWith('.') ||
+      (!allowTrailingDot && hostname.endsWith('.'))
+    ) {
+      return false;
+    }
+
+    // Check each label (part between dots) for valid format
+    const labels = hostname.split('.');
+    for (const label of labels) {
+      // Skip empty labels at the end if trailing dot is allowed
+      if (label.length === 0 && allowTrailingDot) continue;
+      if (label.startsWith('-') || label.endsWith('-') || label.length === 0) {
+        return false;
+      }
+    }
+
     return true;
   } catch {
     if (!requireProtocol && !str.includes('://')) {
       try {
         const testUrl = new URL(`http://${str}`);
-        // Additional validation for domain format
-        if (!/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(testUrl.hostname)) {
+        // Improved validation for domain format
+        // - No leading/trailing dots or hyphens
+        // - No consecutive dots
+        // - Must have at least one dot and valid TLD
+        const hostname = testUrl.hostname;
+        if (
+          !/^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/.test(hostname) ||
+          hostname.includes('..') ||
+          hostname.startsWith('-') ||
+          hostname.endsWith('-')
+        ) {
           return false;
         }
         return true;
