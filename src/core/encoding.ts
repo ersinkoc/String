@@ -119,12 +119,20 @@ export function decodeHtml(str: string): string {
     // Handle decimal numeric entity (&#65;)
     if (dec) {
       const code = parseInt(dec, 10);
-      return code >= 0 && code <= 0x10FFFF ? String.fromCodePoint(code) : match;
+      // BUG #11 FIX: Exclude surrogate pairs (0xD800-0xDFFF)
+      if (code >= 0 && code <= 0x10FFFF && (code < 0xD800 || code > 0xDFFF)) {
+        return String.fromCodePoint(code);
+      }
+      return match;
     }
     // Handle hexadecimal numeric entity (&#x41;)
     if (hex) {
       const code = parseInt(hex, 16);
-      return code >= 0 && code <= 0x10FFFF ? String.fromCodePoint(code) : match;
+      // BUG #11 FIX: Exclude surrogate pairs (0xD800-0xDFFF)
+      if (code >= 0 && code <= 0x10FFFF && (code < 0xD800 || code > 0xDFFF)) {
+        return String.fromCodePoint(code);
+      }
+      return match;
     }
     // Handle named entity (&amp;)
     if (named) {

@@ -21,16 +21,12 @@ export function repeat(str: string, count: number, separator: string = ''): stri
   if (count < 0) {
     throw new Error('Count must be non-negative');
   }
-  
+
   if (count === 0) return '';
   if (count === 1) return str;
-  
-  const parts: string[] = [];
-  for (let i = 0; i < count; i++) {
-    parts.push(str);
-  }
-  
-  return parts.join(separator);
+
+  // BUG #14 FIX: More efficient implementation using Array.fill
+  return Array(count).fill(str).join(separator);
 }
 
 export function truncate(str: string, length: number, options: TruncateOptions = {}): string {

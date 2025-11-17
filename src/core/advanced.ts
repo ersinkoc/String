@@ -34,8 +34,18 @@ export function soundsLike(str1: string, str2: string, algorithm: SoundsLikeAlgo
 
 // Pattern Detection
 export function findPatterns(str: string, minLength: number = 2): Pattern[] {
+  // BUG #4 FIX: Validate minLength to prevent invalid values
+  if (minLength < 1) {
+    throw new Error('minLength must be at least 1');
+  }
+
+  // BUG #4 FIX: Prevent DoS with extremely long strings (O(n³) complexity)
+  if (str.length > 1000) {
+    throw new Error('String too long for pattern finding (max 1000 characters)');
+  }
+
   const patterns: Map<string, Pattern> = new Map();
-  
+
   for (let length = minLength; length <= str.length / 2; length++) {
     for (let i = 0; i <= str.length - length; i++) {
       const pattern = str.slice(i, i + length);
@@ -91,6 +101,15 @@ export function extractNumbers(str: string): string[] {
 
 // String Generation
 export function random(length: number, options: RandomOptions = {}): string {
+  // BUG #3 FIX: Validate length parameter to prevent DoS and handle edge cases
+  if (length < 0) {
+    throw new Error('Length must be non-negative');
+  }
+  if (length > 1000000) {
+    throw new Error('Length exceeds maximum allowed (1000000)');
+  }
+  if (length === 0) return '';
+
   const {
     uppercase = true,
     lowercase = true,
@@ -131,21 +150,36 @@ export function random(length: number, options: RandomOptions = {}): string {
 // Helper function for cryptographically secure random integers
 function getSecureRandomInt(max: number): number {
   if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
-    const array = new Uint32Array(1);
-    crypto.getRandomValues(array);
-    return array[0]! % max;
+    // BUG #2 FIX: Eliminate modulo bias using rejection sampling
+    const range = Math.floor(0x100000000 / max) * max;
+    let value;
+    do {
+      const array = new Uint32Array(1);
+      crypto.getRandomValues(array);
+      value = array[0]!;
+    } while (value >= range);
+    return value % max;
   }
   // Fallback to Math.random() if crypto not available
   return Math.floor(Math.random() * max);
 }
 
 export function generatePronounceable(length: number): string {
+  // BUG #15 FIX: Validate length parameter
+  if (length < 0) {
+    throw new Error('Length must be non-negative');
+  }
+  if (length > 1000000) {
+    throw new Error('Length exceeds maximum allowed (1000000)');
+  }
+  if (length === 0) return '';
+
   const consonants = 'bcdfghjklmnpqrstvwxyz';
   const vowels = 'aeiou';
-  
+
   let result = '';
   let useConsonant = Math.random() > 0.5;
-  
+
   for (let i = 0; i < length; i++) {
     if (useConsonant) {
       result += consonants[Math.floor(Math.random() * consonants.length)];
@@ -154,11 +188,16 @@ export function generatePronounceable(length: number): string {
     }
     useConsonant = !useConsonant;
   }
-  
+
   return result;
 }
 
 export function generateFromPattern(pattern: string): string {
+  // BUG #16 FIX: Validate pattern length to prevent DoS
+  if (pattern.length > 100000) {
+    throw new Error('Pattern too long (max 100000)');
+  }
+
   return pattern.replace(/[#X]/g, char => {
     if (char === '#') {
       return Math.floor(Math.random() * 10).toString();
@@ -176,22 +215,27 @@ export function mask(str: string, options: MaskOptions = {}): string {
     unmaskedStart = 0,
     unmaskedEnd = 0
   } = options;
-  
+
   if (unmaskedStart + unmaskedEnd >= str.length) {
     return str;
   }
-  
+
   const start = str.slice(0, unmaskedStart);
-  const end = str.slice(-unmaskedEnd || str.length);
+  // BUG #1 FIX: Handle unmaskedEnd = 0 correctly
+  const end = unmaskedEnd > 0 ? str.slice(-unmaskedEnd) : '';
   const middle = maskChar.repeat(str.length - unmaskedStart - unmaskedEnd);
-  
+
   return start + middle + end;
 }
 
 export function maskEmail(email: string): string {
   const atIndex = email.indexOf('@');
-  if (atIndex === -1) return mask(email);
-  
+  // BUG #17 FIX: Better validation for email format
+  if (atIndex === -1 || atIndex === 0 || atIndex === email.length - 1) {
+    // Not a valid email format, use basic masking
+    return mask(email);
+  }
+
   const local = email.slice(0, atIndex);
   const domain = email.slice(atIndex);
   
@@ -251,7 +295,8 @@ export function toTable(data: string[][], options: TableOptions = {}): string {
 
   if (!data.length) return '';
 
-  const maxCols = Math.max(...data.map(row => row.length));
+  // BUG #12 FIX: Avoid spread operator stack overflow for large arrays
+  const maxCols = data.reduce((max, row) => Math.max(max, row.length), 0);
   const colWidths = new Array(maxCols).fill(0);
 
   // Calculate column widths - convert all cells to strings
