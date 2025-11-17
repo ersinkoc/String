@@ -35,7 +35,8 @@ export function jaroDistance(str1: string, str2: string): number {
   if (len1 === 0 && len2 === 0) return 1;
   if (len1 === 0 || len2 === 0) return 0;
 
-  const matchWindow = Math.floor(Math.max(len1, len2) / 2) - 1;
+  // BUG #7 FIX: Prevent negative match window for short strings
+  const matchWindow = Math.max(0, Math.floor(Math.max(len1, len2) / 2) - 1);
   const str1Matches = new Array(len1).fill(false);
   const str2Matches = new Array(len2).fill(false);
 
@@ -82,6 +83,12 @@ export function cosineDistance(str1: string, str2: string): number {
 
 function getCharacterBigrams(str: string): Set<string> {
   const bigrams = new Set<string>();
+  // BUG #8 FIX: Handle single characters by treating them as their own "bigram"
+  if (str.length === 0) return bigrams;
+  if (str.length === 1) {
+    bigrams.add(str);
+    return bigrams;
+  }
   for (let i = 0; i < str.length - 1; i++) {
     bigrams.add(str.slice(i, i + 2));
   }
@@ -145,7 +152,8 @@ export function metaphone(str: string): string {
         }
         break;
       case 'C':
-        if (next === 'H' || (next === 'I' && word[i + 2] === 'A')) {
+        // BUG #9 FIX: Add bounds checking for array access
+        if (next === 'H' || (next === 'I' && i + 2 < word.length && word[i + 2] === 'A')) {
           metaphone += 'X';
           i++;
         } else if (next === 'E' || next === 'I' || next === 'Y') {
@@ -155,7 +163,8 @@ export function metaphone(str: string): string {
         }
         break;
       case 'D':
-        if (next === 'G' && (word[i + 2] === 'E' || word[i + 2] === 'I' || word[i + 2] === 'Y')) {
+        // BUG #9 FIX: Add bounds checking for array access
+        if (next === 'G' && i + 2 < word.length && (word[i + 2] === 'E' || word[i + 2] === 'I' || word[i + 2] === 'Y')) {
           metaphone += 'J';
           i += 2;
         } else {
@@ -211,7 +220,8 @@ export function metaphone(str: string): string {
         metaphone += 'R';
         break;
       case 'S':
-        if (next === 'H' || (next === 'I' && (word[i + 2] === 'O' || word[i + 2] === 'A'))) {
+        // BUG #9 FIX: Add bounds checking for array access
+        if (next === 'H' || (next === 'I' && i + 2 < word.length && (word[i + 2] === 'O' || word[i + 2] === 'A'))) {
           metaphone += 'X';
           if (next === 'H') i++;
         } else {
@@ -222,7 +232,8 @@ export function metaphone(str: string): string {
         if (next === 'H') {
           metaphone += '0';
           i++;
-        } else if (next === 'I' && (word[i + 2] === 'O' || word[i + 2] === 'A')) {
+        // BUG #9 FIX: Add bounds checking for array access
+        } else if (next === 'I' && i + 2 < word.length && (word[i + 2] === 'O' || word[i + 2] === 'A')) {
           metaphone += 'X';
         } else {
           metaphone += 'T';

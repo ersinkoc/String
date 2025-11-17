@@ -124,7 +124,9 @@ export function isJson(str: string): boolean {
 }
 
 export function isNumeric(str: string): boolean {
-  return !isNaN(Number(str)) && !isNaN(parseFloat(str)) && isFinite(Number(str));
+  // BUG #6 FIX: Empty string should not be considered numeric
+  if (str.trim().length === 0) return false;
+  return !isNaN(Number(str)) && isFinite(Number(str));
 }
 
 export function isAlpha(str: string, locale?: string): boolean {

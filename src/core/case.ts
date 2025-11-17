@@ -41,9 +41,12 @@ export function toConstantCase(str: string): string {
 }
 
 export function toTitleCase(str: string, locale?: string): string {
+  // BUG #18 FIX: Short-circuit early for empty string
+  if (!str) return str;
+
   const words = str.toLowerCase().split(/\s+/);
   const minorWords = new Set([
-    'a', 'an', 'and', 'as', 'at', 'but', 'by', 'for', 'if', 'in', 'nor', 'of', 
+    'a', 'an', 'and', 'as', 'at', 'but', 'by', 'for', 'if', 'in', 'nor', 'of',
     'on', 'or', 'so', 'the', 'to', 'up', 'yet'
   ]);
 
@@ -56,8 +59,9 @@ export function toTitleCase(str: string, locale?: string): string {
 }
 
 export function toSentenceCase(str: string): string {
-  if (!str) return str;
-  
+  // BUG #19 FIX: Add type validation consistent with other functions
+  if (!str || typeof str !== 'string') return '';
+
   return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 }
 

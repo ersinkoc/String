@@ -110,8 +110,9 @@ describe('Algorithm functions', () => {
     });
 
     it('should handle single characters', () => {
-      expect(jaroDistance('a', 'a')).toBe(0); // Implementation issue with single chars
-      expect(jaroDistance('a', 'b')).toBe(0);
+      // BUG #7 FIX: After fixing negative match window, identical single chars return 1 (correct)
+      expect(jaroDistance('a', 'a')).toBe(1); // Should be 1 for identical strings
+      expect(jaroDistance('a', 'b')).toBe(0); // Should be 0 for different strings
     });
 
     it('should handle case sensitivity', () => {
@@ -157,8 +158,9 @@ describe('Algorithm functions', () => {
     });
 
     it('should handle single characters', () => {
-      expect(cosineDistance('a', 'a')).toBe(1);
-      expect(cosineDistance('a', 'b')).toBe(1); // Single chars have full overlap in some implementations
+      expect(cosineDistance('a', 'a')).toBe(1); // Identical single chars should be 1
+      // BUG #8 FIX: After fixing empty bigram set for single chars, different chars return 0 (correct)
+      expect(cosineDistance('a', 'b')).toBe(0); // Different single chars should be 0
     });
   });
 

@@ -51,11 +51,29 @@ export function removeNonPrintable(str: string): string {
   return str.replace(/[\x00-\x1F\x7F-\x9F]/g, '');
 }
 
+/**
+ * Strips HTML tags from a string.
+ *
+ * WARNING: This is NOT sufficient for XSS prevention!
+ * Do NOT use this for security-sensitive HTML sanitization.
+ * Use a proper HTML sanitizer library like DOMPurify for security purposes.
+ *
+ * This function is intended for:
+ * - Extracting plain text from HTML
+ * - Removing formatting for display
+ * - Non-security text processing
+ *
+ * @param str - The string to strip HTML from
+ * @returns The string with HTML tags removed
+ */
 export function stripHtml(str: string): string {
   if (!str || typeof str !== 'string') return '';
   return str
+    // BUG #10 FIX: Handle script and style tags better (but still not security-grade)
     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/<script\b[^>]*\/>/gi, '') // Self-closing script tags
     .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+    .replace(/<style\b[^>]*\/>/gi, '') // Self-closing style tags
     .replace(/<[^>]*>/g, '')
     .replace(/&[#\w]+;/g, (entity) => {
       const htmlEntities: Record<string, string> = {
