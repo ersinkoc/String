@@ -1,0 +1,23 @@
+BUG-ID,Round,Severity,Category,File,Line,Function,Description,Impact,Status,Tests-Added,Date-Fixed
+BUG-41,3,HIGH,Validation,src/core/advanced.ts,413,progressBar(),No width validation - DoS vulnerability,DoS via extreme width values,FIXED,4,2025-11-18
+BUG-42,3,HIGH,Validation,src/core/manipulation.ts,60,pad(),Empty fillString causes silent failure,Silent failure and confusing behavior,FIXED,3,2025-11-18
+BUG-43,3,MEDIUM,Functionality,src/core/advanced.ts,386,boxify(),Title overflow causes RangeError,Application crash with long titles,FIXED,3,2025-11-18
+BUG-44,3,MEDIUM,Validation,src/core/manipulation.ts,92,wrap(),Indent can exceed width constraint,Output violates width constraint,FIXED,3,2025-11-18
+BUG-48,3,MEDIUM,Security,src/core/manipulation.ts,60,pad(),DoS with extremely large length,Memory exhaustion,FIXED,2,2025-11-18
+BUG-01,2,CRITICAL,Security,src/core/advanced.ts,210,mask(),Data exposure with unmaskedEnd=0,Sensitive data exposure,FIXED,3,2025-11-17
+BUG-02,2,HIGH,Security,src/core/advanced.ts,150,getSecureRandomInt(),Cryptographic modulo bias,Statistical bias in secure random,FIXED,2,2025-11-17
+BUG-03,2,HIGH,Validation,src/core/advanced.ts,103,random(),Length validation DoS,Memory exhaustion and crashes,FIXED,4,2025-11-17
+BUG-04,2,HIGH,Performance,src/core/advanced.ts,36,findPatterns(),O(n³) DoS vulnerability,Application hang with long strings,FIXED,3,2025-11-17
+BUG-06,2,MEDIUM,Validation,src/core/validation.ts,126,isNumeric(),Empty string returns true,Incorrect validation results,FIXED,3,2025-11-17
+BUG-07,2,MEDIUM,Functionality,src/utils/algorithms.ts,38,jaroDistance(),Negative match window,Incorrect similarity scores,FIXED,2,2025-11-17
+BUG-08,2,MEDIUM,Functionality,src/utils/algorithms.ts,84,cosineDistance(),Single character bug,Incorrect similarity calculations,FIXED,3,2025-11-17
+BUG-09,2,MEDIUM,Functionality,src/utils/algorithms.ts,155,metaphone(),Array bounds issues,Potential undefined behavior,FIXED,3,2025-11-17
+BUG-10,2,HIGH,Security,src/core/cleaning.ts,69,stripHtml(),XSS bypass with self-closing tags,Potential XSS vulnerability,FIXED,4,2025-11-17
+BUG-11,2,MEDIUM,Validation,src/core/encoding.ts,118,decodeHtml(),Surrogate pair handling,Invalid Unicode generation,FIXED,3,2025-11-17
+BUG-12,2,MEDIUM,Performance,src/core/advanced.ts,294,toTable(),Stack overflow with spread operator,DoS with large datasets,FIXED,2,2025-11-17
+BUG-14,2,LOW,Performance,src/core/manipulation.ts,20,repeat(),Inefficient implementation,Performance degradation,FIXED,3,2025-11-17
+BUG-15,2,MEDIUM,Validation,src/core/advanced.ts,167,generatePronounceable(),Missing validation,DoS vulnerability,FIXED,4,2025-11-17
+BUG-16,2,LOW,Validation,src/core/advanced.ts,195,generateFromPattern(),Missing validation,Performance with huge patterns,FIXED,2,2025-11-17
+BUG-17,2,LOW,Validation,src/core/advanced.ts,231,maskEmail(),Missing validation,Confusing output for invalid input,FIXED,2,2025-11-17
+BUG-18,2,LOW,Performance,src/core/case.ts,43,toTitleCase(),Empty string inefficiency,Minor performance issue,FIXED,2,2025-11-17
+BUG-19,2,LOW,Validation,src/core/case.ts,61,toSentenceCase(),Missing type validation,Inconsistent error handling,FIXED,2,2025-11-17
