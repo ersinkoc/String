@@ -384,8 +384,10 @@ export function boxify(str: string, options: BoxOptions = {}): string {
 
   // Title
   if (title) {
+    // BUG #43 FIX: Handle title longer than innerWidth
     const titlePadding = Math.max(0, Math.floor((innerWidth - title.length) / 2));
-    const titleLine = chars.v + ' '.repeat(titlePadding) + title + ' '.repeat(innerWidth - titlePadding - title.length) + chars.v;
+    const rightPadding = Math.max(0, innerWidth - titlePadding - title.length);
+    const titleLine = chars.v + ' '.repeat(titlePadding) + title + ' '.repeat(rightPadding) + chars.v;
     result.push(' '.repeat(margin) + titleLine);
 
     const titleSeparator = chars.ml + chars.h.repeat(innerWidth) + chars.mr;
@@ -417,7 +419,15 @@ export function progressBar(value: number, options: ProgressOptions = {}): strin
     incomplete = '░',
     showPercent = true
   } = options;
-  
+
+  // BUG #41 FIX: Validate width parameter
+  if (width <= 0) {
+    throw new Error('Width must be a positive number');
+  }
+  if (width > 10000) {
+    throw new Error('Width exceeds maximum allowed (10000)');
+  }
+
   const percentage = Math.max(0, Math.min(100, value));
   const completed = Math.round((percentage / 100) * width);
   const remaining = width - completed;
