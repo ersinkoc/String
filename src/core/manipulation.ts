@@ -58,8 +58,18 @@ export function truncate(str: string, length: number, options: TruncateOptions =
 }
 
 export function pad(str: string, length: number, fillString: string = ' ', type: PadType = 'end'): string {
+  // BUG #42 FIX: Validate fillString is not empty
+  if (fillString.length === 0) {
+    throw new Error('fillString cannot be empty');
+  }
+
+  // BUG #48 FIX: Prevent DoS with extremely large length
+  if (length > 1000000) {
+    throw new Error('Length exceeds maximum allowed (1000000)');
+  }
+
   if (str.length >= length) return str;
-  
+
   const padLength = length - str.length;
   const fill = fillString.repeat(Math.ceil(padLength / fillString.length)).slice(0, padLength);
   
@@ -86,7 +96,12 @@ export function wrap(str: string, width: number, options: WrapOptions = {}): str
   if (width <= 0) {
     throw new Error('Width must be a positive number');
   }
-  
+
+  // BUG #44 FIX: Validate indent length
+  if (indent.length >= width) {
+    throw new Error('Indent must be shorter than width');
+  }
+
   const words = str.split(/\s+/);
   const lines: string[] = [];
   let currentLine = '';
