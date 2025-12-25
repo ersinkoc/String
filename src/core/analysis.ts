@@ -2,6 +2,11 @@ import { getGraphemes, getCodePoints } from '../utils/unicode';
 import { boyerMooreSearch } from '../utils/algorithms';
 
 export function contains(str: string, search: string, caseSensitive: boolean = true): boolean {
+  // BUG #52 FIX: Validate inputs are strings
+  if (typeof str !== 'string' || typeof search !== 'string') {
+    return false;
+  }
+
   if (!caseSensitive) {
     return str.toLowerCase().includes(search.toLowerCase());
   }
@@ -9,16 +14,21 @@ export function contains(str: string, search: string, caseSensitive: boolean = t
 }
 
 export function count(str: string, search: string): number {
+  // BUG #57 FIX: Validate str parameter
+  if (typeof str !== 'string' || typeof search !== 'string') {
+    return 0;
+  }
+
   if (!search) return 0;
-  
+
   let count = 0;
   let position = 0;
-  
+
   while ((position = str.indexOf(search, position)) !== -1) {
     count++;
     position += search.length;
   }
-  
+
   return count;
 }
 
@@ -29,6 +39,9 @@ export function indexOfAll(str: string, search: string): number[] {
 }
 
 export function words(str: string, locale?: string): string[] {
+  // BUG #60 FIX: Validate input is a string
+  if (!str || typeof str !== 'string') return [];
+
   if (locale && typeof Intl !== 'undefined' && 'Segmenter' in Intl) {
     try {
       const segmenter = new (Intl as any).Segmenter(locale, { granularity: 'word' });
@@ -39,7 +52,7 @@ export function words(str: string, locale?: string): string[] {
       // Fall back to default implementation if locale is invalid
     }
   }
-  
+
   // Use a more inclusive regex that handles Unicode characters
   return str.match(/[\p{L}\p{N}]+/gu) || [];
 }

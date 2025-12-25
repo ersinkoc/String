@@ -41,8 +41,8 @@ export function toConstantCase(str: string): string {
 }
 
 export function toTitleCase(str: string, locale?: string): string {
-  // BUG #18 FIX: Short-circuit early for empty string
-  if (!str) return str;
+  // BUG #49 FIX: Return empty string for consistency with other case functions
+  if (!str || typeof str !== 'string') return '';
 
   const words = str.toLowerCase().split(/\s+/);
   const minorWords = new Set([

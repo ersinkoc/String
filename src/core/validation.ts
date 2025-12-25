@@ -130,6 +130,9 @@ export function isNumeric(str: string): boolean {
 }
 
 export function isAlpha(str: string, locale?: string): boolean {
+  // BUG #55 FIX: Validate input is a string to prevent type coercion
+  if (!str || typeof str !== 'string') return false;
+
   if (locale) {
     const localeRegexes: Record<string, RegExp> = {
       'en': /^[a-zA-Z]+$/,
@@ -139,17 +142,20 @@ export function isAlpha(str: string, locale?: string): boolean {
       'it': /^[a-zA-ZàèéìíîòóùúÀÈÉÌÍÎÒÓÙÚ]+$/,
       'pt': /^[a-zA-ZáàâãéêíóôõúçÁÀÂÃÉÊÍÓÔÕÚÇ]+$/
     };
-    
+
     const regex = localeRegexes[locale];
     if (regex) {
       return regex.test(str);
     }
   }
-  
+
   return /^[a-zA-Z]+$/.test(str);
 }
 
 export function isAlphanumeric(str: string, locale?: string): boolean {
+  // BUG #56 FIX: Validate input is a string to prevent type coercion
+  if (!str || typeof str !== 'string') return false;
+
   if (locale) {
     const localeRegexes: Record<string, RegExp> = {
       'en': /^[a-zA-Z0-9]+$/,
@@ -159,22 +165,27 @@ export function isAlphanumeric(str: string, locale?: string): boolean {
       'it': /^[a-zA-Z0-9àèéìíîòóùúÀÈÉÌÍÎÒÓÙÚ]+$/,
       'pt': /^[a-zA-Z0-9áàâãéêíóôõúçÁÀÂÃÉÊÍÓÔÕÚÇ]+$/
     };
-    
+
     const regex = localeRegexes[locale];
     if (regex) {
       return regex.test(str);
     }
   }
-  
+
   return /^[a-zA-Z0-9]+$/.test(str);
 }
 
 export function isEmpty(str: string, options: { ignoreWhitespace?: boolean } = {}): boolean {
+  // BUG #51 FIX: Validate input is a string
+  if (typeof str !== 'string') {
+    throw new Error('Input must be a string');
+  }
+
   const { ignoreWhitespace = false } = options;
-  
+
   if (ignoreWhitespace) {
     return str.trim().length === 0;
   }
-  
+
   return str.length === 0;
 }
