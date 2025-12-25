@@ -3,23 +3,32 @@ import { reverseUnicode, getGraphemes, getStringWidth } from '../utils/unicode';
 import { removeAccents } from '../utils/unicode';
 
 export function reverse(str: string): string {
+  // BUG #58 FIX: Validate input is a string
+  if (!str || typeof str !== 'string') return '';
   return reverseUnicode(str);
 }
 
 export function shuffle(str: string): string {
+  // BUG #59 FIX: Validate input is a string
+  if (!str || typeof str !== 'string') return '';
   const chars = getGraphemes(str);
-  
+
   for (let i = chars.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [chars[i], chars[j]] = [chars[j]!, chars[i]!];
   }
-  
+
   return chars.join('');
 }
 
 export function repeat(str: string, count: number, separator: string = ''): string {
   if (count < 0) {
     throw new Error('Count must be non-negative');
+  }
+
+  // BUG #61 FIX: Prevent DoS with extremely large count
+  if (count > 1000000) {
+    throw new Error('Count exceeds maximum allowed (1000000)');
   }
 
   if (count === 0) return '';
@@ -31,6 +40,11 @@ export function repeat(str: string, count: number, separator: string = ''): stri
 
 export function truncate(str: string, length: number, options: TruncateOptions = {}): string {
   const { suffix = '...', preserveWords = false } = options;
+
+  // BUG #54 FIX: Validate length is non-negative
+  if (length < 0) {
+    throw new Error('Length must be non-negative');
+  }
 
   if (str.length <= length) return str;
 

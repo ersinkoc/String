@@ -289,8 +289,9 @@ describe('New Bug Fixes - LOW Severity', () => {
   describe('BUG #18: toTitleCase() empty string optimization', () => {
     test('should handle empty string efficiently', () => {
       expect(toTitleCase('')).toBe('');
-      expect(toTitleCase(null as any)).toBe(null);
-      expect(toTitleCase(undefined as any)).toBe(undefined);
+      // BUG #49 FIX: Now returns '' for consistency with other case functions
+      expect(toTitleCase(null as any)).toBe('');
+      expect(toTitleCase(undefined as any)).toBe('');
     });
 
     test('should still work correctly for normal strings', () => {
